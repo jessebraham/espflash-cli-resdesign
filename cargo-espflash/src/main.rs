@@ -1,15 +1,19 @@
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
-use strum::VariantNames;
-
-use crate::{
-    BoardInfoOpts,
-    ConnectOpts,
-    FlashConfigOpts,
-    ImageFormat,
-    MonitorOpts,
-    PartitionTableOpts,
+use espflash::{
+    cli::{
+        logging::initialize_logger,
+        BoardInfoOpts,
+        ConnectOpts,
+        FlashConfigOpts,
+        FlashOpts as BaseFlashOpts,
+        MonitorOpts,
+        PartitionTableOpts,
+        SaveImageOpts as BaseSaveImageOpts,
+    },
+    enums::ImageFormat,
 };
+use strum::VariantNames;
 
 #[derive(Debug, Parser)]
 #[clap(bin_name = "cargo", propagate_version = true, version)]
@@ -82,7 +86,7 @@ pub struct FlashOpts {
     #[clap(flatten)]
     connect_opts: ConnectOpts,
     #[clap(flatten)]
-    flash_opts: crate::FlashOpts,
+    flash_opts: BaseFlashOpts,
 }
 
 #[derive(Debug, Parser)]
@@ -90,5 +94,14 @@ pub struct SaveImageOpts {
     #[clap(flatten)]
     build_opts: BuildOpts,
     #[clap(flatten)]
-    save_image_opts: crate::SaveImageOpts,
+    save_image_opts: BaseSaveImageOpts,
+}
+
+fn main() -> anyhow::Result<()> {
+    let opts = Opts::parse();
+    initialize_logger(opts.verbose.log_level_filter());
+
+    println!("{:#?}", opts);
+
+    Ok(())
 }
