@@ -76,11 +76,9 @@ fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
     parse_int::parse(input)
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let opts = Opts::parse();
     initialize_logger(opts.verbose.log_level_filter());
 
     println!("{:#?}", opts);
-
-    Ok(())
 }

@@ -97,11 +97,9 @@ pub struct SaveImageOpts {
     save_image_opts: BaseSaveImageOpts,
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let opts = Opts::parse();
     initialize_logger(opts.verbose.log_level_filter());
 
     println!("{:#?}", opts);
-
-    Ok(())
 }
