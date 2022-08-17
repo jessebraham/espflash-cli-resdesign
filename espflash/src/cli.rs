@@ -26,6 +26,24 @@ pub mod logging {
     }
 }
 
+pub mod update {
+    use std::time::Duration;
+
+    use log::info;
+    use update_informer::{registry, Check};
+
+    pub fn check_for_update(name: &str, version: &str) {
+        // By setting the interval to 0 seconds we invalidate the cache with each
+        // invocation and ensure we're getting up-to-date results
+        let informer =
+            update_informer::new(registry::Crates, name, version).interval(Duration::from_secs(0));
+
+        if let Some(version) = informer.check_version().ok().flatten() {
+            info!("New version of {name} is available: {version}\n");
+        }
+    }
+}
+
 #[derive(Debug, Parser)]
 pub struct ConnectOpts {
     /// Baud rate at which to communicate with target device

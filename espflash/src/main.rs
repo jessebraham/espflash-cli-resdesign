@@ -5,6 +5,7 @@ use clap_verbosity_flag::Verbosity;
 use espflash::{
     cli::{
         logging::initialize_logger,
+        update::check_for_update,
         BoardInfoOpts,
         ConnectOpts,
         FlashConfigOpts,
@@ -79,6 +80,8 @@ fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
 fn main() {
     let opts = Opts::parse();
     initialize_logger(opts.verbose.log_level_filter());
+
+    check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 
     println!("{:#?}", opts);
 }
