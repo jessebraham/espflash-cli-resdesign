@@ -1,7 +1,6 @@
 use std::{num::ParseIntError, path::PathBuf};
 
 use clap::Parser;
-use clap_verbosity_flag::Verbosity;
 use espflash::{
     cli::{
         logging::initialize_logger,
@@ -16,6 +15,7 @@ use espflash::{
     },
     enums::ImageFormat,
 };
+use log::{debug, LevelFilter};
 use strum::VariantNames;
 
 #[derive(Debug, Parser)]
@@ -23,8 +23,6 @@ use strum::VariantNames;
 pub struct Opts {
     #[clap(subcommand)]
     subcommand: Subcommand,
-    #[clap(flatten)]
-    pub verbose: Verbosity,
 }
 
 #[derive(Debug, Parser)]
@@ -78,10 +76,9 @@ fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
 }
 
 fn main() {
-    let opts = Opts::parse();
-    initialize_logger(opts.verbose.log_level_filter());
-
+    initialize_logger(LevelFilter::Info);
     check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 
-    println!("{:#?}", opts);
+    let opts = Opts::parse();
+    debug!("{:#?}", opts);
 }

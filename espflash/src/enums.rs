@@ -34,7 +34,7 @@ impl FromStr for Chip {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Display, EnumVariantNames)]
 #[strum(serialize_all = "kebab-case")]
 pub enum ImageFormat {
-    IdfBootloader,
+    IdfBoot,
     DirectBoot,
     McuBoot,
 }
@@ -46,7 +46,7 @@ impl FromStr for ImageFormat {
         use ImageFormat::*;
 
         match s.to_lowercase().as_str() {
-            "idf-bootloader" => Ok(IdfBootloader),
+            "idf-boot" => Ok(IdfBoot),
             "direct-boot" => Ok(DirectBoot),
             "mcu-boot" => Ok(McuBoot),
             format => Err(format!("invalid image format '{format}'!")),

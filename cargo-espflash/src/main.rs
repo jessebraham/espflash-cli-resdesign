@@ -1,5 +1,4 @@
 use clap::Parser;
-use clap_verbosity_flag::Verbosity;
 use espflash::{
     cli::{
         logging::initialize_logger,
@@ -14,6 +13,7 @@ use espflash::{
     },
     enums::ImageFormat,
 };
+use log::{debug, LevelFilter};
 use strum::VariantNames;
 
 #[derive(Debug, Parser)]
@@ -21,8 +21,6 @@ use strum::VariantNames;
 pub struct Opts {
     #[clap(subcommand)]
     subcommand: CargoSubcommand,
-    #[clap(flatten)]
-    pub verbose: Verbosity,
 }
 
 #[derive(Debug, Parser)]
@@ -99,10 +97,9 @@ pub struct SaveImageOpts {
 }
 
 fn main() {
-    let opts = Opts::parse();
-    initialize_logger(opts.verbose.log_level_filter());
-
+    initialize_logger(LevelFilter::Debug);
     check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 
-    println!("{:#?}", opts);
+    let opts = Opts::parse();
+    debug!("{:#?}", opts);
 }

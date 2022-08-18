@@ -10,6 +10,7 @@ pub mod logging {
 
     pub fn initialize_logger(filter: log::LevelFilter) {
         tracing_subscriber::fmt()
+            .with_target(false)
             .with_max_level(convert_filter(filter))
             .init();
     }
@@ -39,7 +40,7 @@ pub mod update {
             update_informer::new(registry::Crates, name, version).interval(Duration::from_secs(0));
 
         if let Some(version) = informer.check_version().ok().flatten() {
-            info!("New version of {name} is available: {version}\n");
+            info!("New version of {name} is available: {version}");
         }
     }
 }
