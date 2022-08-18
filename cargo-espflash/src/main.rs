@@ -97,7 +97,7 @@ struct SaveImageArgs {
 }
 
 fn main() {
-    initialize_logger(LevelFilter::INFO);
+    initialize_logger(LevelFilter::DEBUG);
 
     // Attempt to parse any provided comand-line arguments, or print the help
     // message and terminate if the invocation is not correct.
