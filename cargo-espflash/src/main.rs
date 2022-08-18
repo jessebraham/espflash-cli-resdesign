@@ -1,47 +1,47 @@
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use espflash::{
     cli::{
-        logging::initialize_logger,
+        logging::{initialize_logger, LevelFilter},
         update::check_for_update,
-        BoardInfoOpts,
-        ConnectOpts,
-        FlashConfigOpts,
-        FlashOpts as BaseFlashOpts,
-        MonitorOpts,
-        PartitionTableOpts,
-        SaveImageOpts as BaseSaveImageOpts,
+        BoardInfoArgs,
+        ConnectArgs,
+        FlashArgs as BaseFlashArgs,
+        FlashConfigArgs,
+        MonitorArgs,
+        PartitionTableArgs,
+        SaveImageArgs as BaseSaveImageArgs,
     },
     enums::ImageFormat,
 };
-use log::{debug, LevelFilter};
+use log::debug;
 use strum::VariantNames;
 
 #[derive(Debug, Parser)]
 #[clap(bin_name = "cargo", propagate_version = true, version)]
-pub struct Opts {
+struct Cli {
     #[clap(subcommand)]
     subcommand: CargoSubcommand,
 }
 
-#[derive(Debug, Parser)]
-pub enum CargoSubcommand {
+#[derive(Debug, Subcommand)]
+enum CargoSubcommand {
     Espflash {
         #[clap(subcommand)]
-        subcommand: Subcommand,
+        subcommand: Commands,
     },
 }
 
-#[derive(Debug, Parser)]
-pub enum Subcommand {
-    BoardInfo(BoardInfoOpts),
-    Flash(FlashOpts),
-    Monitor(MonitorOpts),
-    PartitionTable(PartitionTableOpts),
-    SaveImage(SaveImageOpts),
+#[derive(Debug, Subcommand)]
+enum Commands {
+    BoardInfo(BoardInfoArgs),
+    Flash(FlashArgs),
+    Monitor(MonitorArgs),
+    PartitionTable(PartitionTableArgs),
+    SaveImage(SaveImageArgs),
 }
 
-#[derive(Debug, Parser)]
-pub struct BuildOpts {
+#[derive(Debug, Args)]
+struct BuildArgs {
     /// Example to build and flash
     #[clap(long)]
     pub example: Option<String>,
@@ -74,32 +74,38 @@ pub struct BuildOpts {
     pub unstable: Option<Vec<String>>,
 
     #[clap(flatten)]
-    pub flash_config_opts: FlashConfigOpts,
+    pub flash_config_args: FlashConfigArgs,
 }
 
 /// Build and flash an application to a target device
-#[derive(Debug, Parser)]
-pub struct FlashOpts {
+#[derive(Debug, Args)]
+struct FlashArgs {
     #[clap(flatten)]
-    build_opts: BuildOpts,
+    build_args: BuildArgs,
     #[clap(flatten)]
-    connect_opts: ConnectOpts,
+    connect_args: ConnectArgs,
     #[clap(flatten)]
-    flash_opts: BaseFlashOpts,
+    flash_args: BaseFlashArgs,
 }
 
-#[derive(Debug, Parser)]
-pub struct SaveImageOpts {
+#[derive(Debug, Args)]
+struct SaveImageArgs {
     #[clap(flatten)]
-    build_opts: BuildOpts,
+    build_args: BuildArgs,
     #[clap(flatten)]
-    save_image_opts: BaseSaveImageOpts,
+    save_image_args: BaseSaveImageArgs,
 }
 
 fn main() {
-    initialize_logger(LevelFilter::Debug);
-    check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+    initialize_logger(LevelFilter::INFO);
 
-    let opts = Opts::parse();
-    debug!("{:#?}", opts);
+    // Attempt to parse any provided comand-line arguments, or print the help
+    // message and terminate if the invocation is not correct.
+    let CargoSubcommand::Espflash { subcommand: args } = Cli::parse().subcommand;
+    debug!("{:#?}", args);
+
+    // Only check for updates once the command-line arguments have been processed,
+    // to avoid printing any update notifications when the help message is
+    // displayed.
+    check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 }

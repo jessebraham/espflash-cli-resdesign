@@ -1,51 +1,51 @@
 use std::{num::ParseIntError, path::PathBuf};
 
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use espflash::{
     cli::{
-        logging::initialize_logger,
+        logging::{initialize_logger, LevelFilter},
         update::check_for_update,
-        BoardInfoOpts,
-        ConnectOpts,
-        FlashConfigOpts,
-        FlashOpts as BaseFlashOpts,
-        MonitorOpts,
-        PartitionTableOpts,
-        SaveImageOpts as BaseSaveImageOpts,
+        BoardInfoArgs,
+        ConnectArgs,
+        FlashArgs as BaseFlashArgs,
+        FlashConfigArgs,
+        MonitorArgs,
+        PartitionTableArgs,
+        SaveImageArgs as BaseSaveImageArgs,
     },
     enums::ImageFormat,
 };
-use log::{debug, LevelFilter};
+use log::debug;
 use strum::VariantNames;
 
 #[derive(Debug, Parser)]
 #[clap(propagate_version = true, version)]
-pub struct Opts {
+struct Cli {
     #[clap(subcommand)]
-    subcommand: Subcommand,
+    subcommand: Commands,
 }
 
-#[derive(Debug, Parser)]
-pub enum Subcommand {
-    BoardInfo(BoardInfoOpts),
-    Flash(FlashOpts),
-    Monitor(MonitorOpts),
-    PartitionTable(PartitionTableOpts),
-    SaveImage(SaveImageOpts),
-    WriteBin(WriteBinOpts),
+#[derive(Debug, Subcommand)]
+enum Commands {
+    BoardInfo(BoardInfoArgs),
+    Flash(FlashArgs),
+    Monitor(MonitorArgs),
+    PartitionTable(PartitionTableArgs),
+    SaveImage(SaveImageArgs),
+    WriteBin(WriteBinArgs),
 }
 
 /// Flash an application to a target device
-#[derive(Debug, Parser)]
-pub struct FlashOpts {
+#[derive(Debug, Args)]
+struct FlashArgs {
     #[clap(flatten)]
-    connect_opts: ConnectOpts,
+    connect_args: ConnectArgs,
     #[clap(flatten)]
-    flash_opts: BaseFlashOpts,
+    flash_args: BaseFlashArgs,
 }
 
-#[derive(Debug, Parser)]
-pub struct SaveImageOpts {
+#[derive(Debug, Args)]
+struct SaveImageArgs {
     /// Image format to flash
     #[clap(long, possible_values = ImageFormat::VARIANTS)]
     format: Option<String>,
@@ -53,14 +53,14 @@ pub struct SaveImageOpts {
     image: PathBuf,
 
     #[clap(flatten)]
-    pub flash_config_opts: FlashConfigOpts,
+    pub flash_config_args: FlashConfigArgs,
     #[clap(flatten)]
-    save_image_opts: BaseSaveImageOpts,
+    save_image_args: BaseSaveImageArgs,
 }
 
 /// Writes a binary file to a specific address in the chip's flash
-#[derive(Debug, Parser)]
-pub struct WriteBinOpts {
+#[derive(Debug, Args)]
+struct WriteBinArgs {
     /// Address at which to write the binary file
     #[clap(value_parser = parse_uint32)]
     pub addr: u32,
@@ -68,7 +68,7 @@ pub struct WriteBinOpts {
     pub bin_file: String,
 
     #[clap(flatten)]
-    connect_opts: ConnectOpts,
+    connect_args: ConnectArgs,
 }
 
 fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
@@ -76,9 +76,15 @@ fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
 }
 
 fn main() {
-    initialize_logger(LevelFilter::Info);
-    check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+    initialize_logger(LevelFilter::DEBUG);
 
-    let opts = Opts::parse();
-    debug!("{:#?}", opts);
+    // Attempt to parse any provided comand-line arguments, or print the help
+    // message and terminate if the invocation is not correct.
+    let args = Cli::parse().subcommand;
+    debug!("{:#?}", args);
+
+    // Only check for updates once the command-line arguments have been processed,
+    // to avoid printing any update notifications when the help message is
+    // displayed.
+    check_for_update(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 }

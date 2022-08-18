@@ -1,29 +1,18 @@
 use std::path::PathBuf;
 
-use clap::Parser;
+use clap::Args;
 use strum::VariantNames;
 
 use crate::enums::{Chip, FlashFrequency, FlashMode, FlashSize};
 
 pub mod logging {
-    use tracing_subscriber::filter::LevelFilter;
+    pub use tracing_subscriber::filter::LevelFilter;
 
-    pub fn initialize_logger(filter: log::LevelFilter) {
+    pub fn initialize_logger(filter: LevelFilter) {
         tracing_subscriber::fmt()
             .with_target(false)
-            .with_max_level(convert_filter(filter))
+            .with_max_level(filter)
             .init();
-    }
-
-    fn convert_filter(filter: log::LevelFilter) -> LevelFilter {
-        match filter {
-            log::LevelFilter::Off => LevelFilter::OFF,
-            log::LevelFilter::Error => LevelFilter::ERROR,
-            log::LevelFilter::Warn => LevelFilter::WARN,
-            log::LevelFilter::Info => LevelFilter::INFO,
-            log::LevelFilter::Debug => LevelFilter::DEBUG,
-            log::LevelFilter::Trace => LevelFilter::TRACE,
-        }
     }
 }
 
@@ -40,13 +29,13 @@ pub mod update {
             update_informer::new(registry::Crates, name, version).interval(Duration::from_secs(0));
 
         if let Some(version) = informer.check_version().ok().flatten() {
-            info!("New version of {name} is available: {version}");
+            info!("🚀 A new version of {name} is available: {version}");
         }
     }
 }
 
-#[derive(Debug, Parser)]
-pub struct ConnectOpts {
+#[derive(Debug, Args)]
+pub struct ConnectArgs {
     /// Baud rate at which to communicate with target device
     #[clap(short = 'b', long)]
     pub baud: Option<u32>,
@@ -55,8 +44,8 @@ pub struct ConnectOpts {
     pub port: Option<String>,
 }
 
-#[derive(Debug, Parser)]
-pub struct FlashConfigOpts {
+#[derive(Debug, Args)]
+pub struct FlashConfigArgs {
     /// Flash frequency
     #[clap(short = 'f', long, possible_values = FlashFrequency::VARIANTS, value_name = "FREQ")]
     pub flash_freq: Option<FlashFrequency>,
@@ -69,14 +58,14 @@ pub struct FlashConfigOpts {
 }
 
 /// Display information about the connected board and exit without flashing
-#[derive(Debug, Parser)]
-pub struct BoardInfoOpts {
+#[derive(Debug, Args)]
+pub struct BoardInfoArgs {
     #[clap(flatten)]
-    opts: ConnectOpts,
+    args: ConnectArgs,
 }
 
-#[derive(Debug, Parser)]
-pub struct FlashOpts {
+#[derive(Debug, Args)]
+pub struct FlashArgs {
     /// Path to a binary (.bin) bootloader file
     #[clap(long)]
     pub bootloader: Option<PathBuf>,
@@ -92,15 +81,15 @@ pub struct FlashOpts {
 }
 
 /// Open the serial monitor without flashing
-#[derive(Debug, Parser)]
-pub struct MonitorOpts {
+#[derive(Debug, Args)]
+pub struct MonitorArgs {
     #[clap(flatten)]
-    opts: ConnectOpts,
+    args: ConnectArgs,
 }
 
 /// Operations for partitions tables
-#[derive(Debug, Parser)]
-pub struct PartitionTableOpts {
+#[derive(Debug, Args)]
+pub struct PartitionTableArgs {
     /// Optional output file name, if unset will output to stdout
     #[clap(short = 'o', long)]
     output: Option<PathBuf>,
@@ -115,8 +104,8 @@ pub struct PartitionTableOpts {
 }
 
 /// Save the image to disk instead of flashing to device
-#[derive(Debug, Parser)]
-pub struct SaveImageOpts {
+#[derive(Debug, Args)]
+pub struct SaveImageArgs {
     /// Custom bootloader for merging
     #[clap(long)]
     pub bootloader: Option<PathBuf>,
