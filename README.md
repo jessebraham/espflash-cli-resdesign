@@ -12,9 +12,3 @@ Both `cargo-espflash` and `espflash` now require a `flash` subcommand for flashi
 2. using a subcommand is more consistent with the rest of the CLI (and with `esptool.py` as well)
 
 **Q:** Do we want to stick with `flash` for the name of this subcommand? `esptool.py` uses `write_mem`/`write_flash`, do we want to use these and get rid of the `--ram` flag, or just use `write` instead?
-
----
-
-We are currently using [tracing-subscriber](https://github.com/tokio-rs/tracing) for configuring our logging. I'm am not super familiar with this crate, but I have not yet found a way to set the `LOG_LEVEL` via an environment variable.
-
-**Q:** Is the lack of this functionality a deal-breaker? Should we just use something like [env-logger](https://github.com/env-logger-rs/env_logger) instead? Does [tracing-subscriber](https://github.com/tokio-rs/tracing) provide any real benefits that I'm not aware of?

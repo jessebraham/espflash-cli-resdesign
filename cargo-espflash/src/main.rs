@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use espflash::{
     cli::{
-        logging::{initialize_logger, LevelFilter},
+        logging::initialize_logger,
         update::check_for_update,
         BoardInfoArgs,
         ConnectArgs,
@@ -13,7 +13,7 @@ use espflash::{
     },
     enums::ImageFormat,
 };
-use log::debug;
+use log::{debug, LevelFilter};
 use strum::VariantNames;
 
 #[derive(Debug, Parser)]
@@ -97,7 +97,7 @@ struct SaveImageArgs {
 }
 
 fn main() {
-    initialize_logger(LevelFilter::DEBUG);
+    initialize_logger(LevelFilter::Debug);
 
     // Attempt to parse any provided comand-line arguments, or print the help
     // message and terminate if the invocation is not correct.

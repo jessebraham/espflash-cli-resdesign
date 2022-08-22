@@ -6,13 +6,11 @@ use strum::VariantNames;
 use crate::enums::{Chip, FlashFrequency, FlashMode, FlashSize};
 
 pub mod logging {
-    pub use tracing_subscriber::filter::LevelFilter;
+    use env_logger::Env;
+    use log::LevelFilter;
 
     pub fn initialize_logger(filter: LevelFilter) {
-        tracing_subscriber::fmt()
-            .with_target(false)
-            .with_max_level(filter)
-            .init();
+        env_logger::Builder::from_env(Env::default().default_filter_or(filter.as_str())).init();
     }
 }
 
